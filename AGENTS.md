@@ -43,7 +43,7 @@ Single quotes, semicolons as-needed (omitted unless required), trailing commas e
 
 ### Publish flow
 
-`prepublishOnly` runs `pnpm build` automatically. Bump `version` in `package.json`, then `npm publish` (or `pnpm publish`) from a clean tree — there's no changeset tooling in this repo (that's a `billets` monorepo convention, doesn't apply here). Commit messages in this repo follow plain English Conventional Commits (`feat:`, `fix:`, ...), not the Korean `<type>(<scope>): ...` convention used in the `billets` monorepo.
+Add a changeset for any change to the published surface: `pnpm changeset` (pick patch/minor/major, write the summary), commit the generated `.changeset/*.md` alongside your change. `pnpm version` (`changeset version`) consumes pending changesets to bump `package.json` and write `CHANGELOG.md` — run that as its own step, not mixed into a feature commit. `prepublishOnly` runs `pnpm build` automatically, so `npm publish` (or `pnpm publish`) from a clean tree after versioning is enough. Commit messages in this repo follow plain English Conventional Commits (`feat:`, `fix:`, ...), not the Korean `<type>(<scope>): ...` convention used in the `billets` monorepo.
 
 ## 1. Mental model (read this before writing any code)
 

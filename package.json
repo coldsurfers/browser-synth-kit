@@ -53,10 +53,13 @@
     "check:type": "tsc --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
+    "changeset": "changeset",
+    "version": "changeset version",
     "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.0",
+    "@changesets/cli": "^2.31.0",
     "tsup": "^8.3.5",
     "typescript": "~5.9.3"
   },
