@@ -9,23 +9,36 @@ Two audiences share this file:
 
 ## 0. Working in this repo
 
-This is a standalone single-package repo (no monorepo, no workspace filter needed) — plain `pnpm <script>` from the root.
+This is a pnpm workspace monorepo with two members:
+
+```
+packages/synth-kit/   the published package (@coldsurf/synth-kit) — engines live here
+demo/                 Vite + vanilla TS playground, depends on synth-kit via workspace:*
+```
+
+Run scripts from the repo root; `--filter` targets one workspace member.
 
 ### Commands
 
 ```bash
-pnpm build          # tsup → dist/ (ESM + .d.ts, one entry per barrel)
-pnpm check:type      # tsc --noEmit
-pnpm lint            # biome check .
-pnpm lint:fix        # biome check --write .
+pnpm install                                    # once, from repo root
+
+pnpm build                                      # = pnpm --filter @coldsurf/synth-kit build (tsup → dist/)
+pnpm --filter @coldsurf/synth-kit check:type     # tsc --noEmit for the library
+pnpm --filter demo dev                          # Vite dev server for the demo playground
+pnpm --filter demo check:type                   # tsc --noEmit for the demo
+
+pnpm check:type                                 # both packages (pnpm -r check:type)
+pnpm lint                                        # biome check . (single root biome.json, whole repo)
+pnpm lint:fix                                    # biome check --write .
 ```
 
-Run `pnpm lint:fix` and `pnpm check:type` after any edit, before considering a change done.
+Run `pnpm lint:fix` and `pnpm check:type` after any edit, before considering a change done. The demo imports the library's built `dist/` output (via its `exports` map, resolved through the workspace symlink) — rebuild the library (`pnpm build`) after engine/preset changes before expecting the demo to pick them up.
 
 ### Architecture map
 
 ```
-src/
+packages/synth-kit/src/
   index.ts        root barrel — wall (sunwall.ts) + scheduler + space re-exports
   sunwall.ts       Wall engine (createWall) + built-in wall presets
   scheduler.ts     runStepClock — the only scheduling primitive
@@ -33,6 +46,9 @@ src/
   bass/            createBass (bass.ts) + presets (basses.ts) + barrel (index.ts)
   dub/             createDubChamber (chamber.ts) + presets (chambers.ts) + barrel (index.ts)
   space/           createStrip (strip.ts) — mixer, not an instrument
+
+demo/src/           Vite playground — one section module per engine (wall/drumkit/bass),
+                     imports @coldsurf/synth-kit exactly like an external consumer would.
 ```
 
 Each subfolder's `index.ts` is the *only* supported import path for that engine (`./drumkit`, `./bass`, `./dub`, `./space`) — matches `exports` in `package.json` and entries in `tsup.config.ts`. New engine → new subfolder with the same `<engine>.ts` + `<engine>s.ts` (presets) + `index.ts` shape; new preset → new exported constant in the existing `<engine>s.ts`, not a new file.

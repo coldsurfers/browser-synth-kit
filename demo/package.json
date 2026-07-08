@@ -1,0 +1,22 @@
+{
+  "name": "demo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Static browser playground for @coldsurf/synth-kit — pick an engine + preset, hit play.",
+  "type": "module",
+  "scripts": {
+    "predev": "pnpm --filter @coldsurf/synth-kit build",
+    "dev": "vite",
+    "prebuild": "pnpm --filter @coldsurf/synth-kit build",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check:type": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@coldsurf/synth-kit": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vite": "^6.3.5"
+  }
+}

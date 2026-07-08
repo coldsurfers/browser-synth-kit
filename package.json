@@ -1,66 +1,25 @@
 {
-  "name": "@coldsurf/synth-kit",
-  "version": "0.1.0",
-  "description": "Color-blind Web Audio synthesis engines (wall, drumkit, bass, dub chamber, mixer strip) behind a VST-style engine/preset model. Browser-first; see README for offline-rendering caveats.",
+  "name": "browser-synth-kit",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Monorepo for @coldsurf/synth-kit (color-blind Web Audio synthesis engines) and its browser demo playground.",
   "license": "MIT",
-  "author": {
-    "name": "Dong-Ho Choi",
-    "email": "imcoldsurf@gmail.com",
-    "url": "https://coldsurf.io"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/coldsurfers/browser-synth-kit.git"
   },
-  "keywords": [
-    "web-audio",
-    "synth",
-    "synthesizer",
-    "audio",
-    "music",
-    "generative-music"
-  ],
-  "type": "module",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./drumkit": {
-      "types": "./dist/drumkit/index.d.ts",
-      "import": "./dist/drumkit/index.js"
-    },
-    "./bass": {
-      "types": "./dist/bass/index.d.ts",
-      "import": "./dist/bass/index.js"
-    },
-    "./dub": {
-      "types": "./dist/dub/index.d.ts",
-      "import": "./dist/dub/index.js"
-    },
-    "./space": {
-      "types": "./dist/space/index.d.ts",
-      "import": "./dist/space/index.js"
-    }
-  },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
-    "build": "tsup",
-    "check:type": "tsc --noEmit",
+    "build": "pnpm --filter @coldsurf/synth-kit build",
+    "check:type": "pnpm -r check:type",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "changeset": "changeset",
     "version": "changeset version",
-    "prepublishOnly": "pnpm build"
+    "dev": "pnpm --filter demo dev"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.0",
     "@changesets/cli": "^2.31.0",
-    "tsup": "^8.3.5",
     "typescript": "~5.9.3"
   },
   "packageManager": "pnpm@10.4.1",

@@ -1,0 +1,61 @@
+{
+  "name": "@coldsurf/synth-kit",
+  "version": "0.1.0",
+  "description": "Color-blind Web Audio synthesis engines (wall, drumkit, bass, dub chamber, mixer strip) behind a VST-style engine/preset model. Browser-first; see README for offline-rendering caveats.",
+  "license": "MIT",
+  "author": {
+    "name": "Dong-Ho Choi",
+    "email": "imcoldsurf@gmail.com",
+    "url": "https://coldsurf.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coldsurfers/browser-synth-kit.git",
+    "directory": "packages/synth-kit"
+  },
+  "keywords": [
+    "web-audio",
+    "synth",
+    "synthesizer",
+    "audio",
+    "music",
+    "generative-music"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./drumkit": {
+      "types": "./dist/drumkit/index.d.ts",
+      "import": "./dist/drumkit/index.js"
+    },
+    "./bass": {
+      "types": "./dist/bass/index.d.ts",
+      "import": "./dist/bass/index.js"
+    },
+    "./dub": {
+      "types": "./dist/dub/index.d.ts",
+      "import": "./dist/dub/index.js"
+    },
+    "./space": {
+      "types": "./dist/space/index.d.ts",
+      "import": "./dist/space/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "check:type": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "~5.9.3"
+  }
+}

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@coldsurf/synth-kit — demo</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>@coldsurf/synth-kit</h1>
+        <p>
+          Color-blind Web Audio synthesis engines. Pick an engine, pick a preset, hit play — no
+          install required. See the
+          <a href="https://github.com/coldsurfers/browser-synth-kit" target="_blank" rel="noreferrer"
+            >source</a
+          >.
+        </p>
+      </header>
+
+      <section id="wall-section" class="engine-section">
+        <h2>Wall</h2>
+        <p class="hint">Sawtooth chord stack → distortion → tremolo. Shoegaze/blackgaze walls.</p>
+      </section>
+
+      <section id="drumkit-section" class="engine-section">
+        <h2>Drumkit</h2>
+        <p class="hint">Kick · snare · hat (closed/open) — click a pad to trigger it.</p>
+      </section>
+
+      <section id="bass-section" class="engine-section">
+        <h2>Bass</h2>
+        <p class="hint">Reese + sub layers.</p>
+      </section>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
