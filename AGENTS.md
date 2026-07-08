@@ -1,18 +1,61 @@
 # AGENTS.md
 
-Guidance for coding agents (Claude Code, Cursor, etc.) working with `@coldsurf/synth-kit` in a host project. This file is about **how not to get it wrong** — for what the package is, read [README.md](./README.md) first.
+Guidance for coding agents (Claude Code, Cursor, etc.) working with `@coldsurf/synth-kit`. This file is about **how not to get it wrong** — for what the package is, read [README.md](./README.md) first.
 
-## Mental model (read this before writing any code)
+Two audiences share this file:
+
+- **§0** is for agents working *inside this repo* (adding engines, presets, fixing bugs, publishing).
+- **§1 onward** is the contract for agents *consuming* the package from a host project — the mental model, engine signatures, and lifecycle rules apply identically whether you're calling `createWall` from this repo's own code or from an app that depends on it.
+
+## 0. Working in this repo
+
+This is a standalone single-package repo (no monorepo, no workspace filter needed) — plain `pnpm <script>` from the root.
+
+### Commands
+
+```bash
+pnpm build          # tsup → dist/ (ESM + .d.ts, one entry per barrel)
+pnpm check:type      # tsc --noEmit
+pnpm lint            # biome check .
+pnpm lint:fix        # biome check --write .
+```
+
+Run `pnpm lint:fix` and `pnpm check:type` after any edit, before considering a change done.
+
+### Architecture map
+
+```
+src/
+  index.ts        root barrel — wall (sunwall.ts) + scheduler + space re-exports
+  sunwall.ts       Wall engine (createWall) + built-in wall presets
+  scheduler.ts     runStepClock — the only scheduling primitive
+  drumkit/         createDrumKit (drumkit.ts) + presets (kits.ts) + barrel (index.ts)
+  bass/            createBass (bass.ts) + presets (basses.ts) + barrel (index.ts)
+  dub/             createDubChamber (chamber.ts) + presets (chambers.ts) + barrel (index.ts)
+  space/           createStrip (strip.ts) — mixer, not an instrument
+```
+
+Each subfolder's `index.ts` is the *only* supported import path for that engine (`./drumkit`, `./bass`, `./dub`, `./space`) — matches `exports` in `package.json` and entries in `tsup.config.ts`. New engine → new subfolder with the same `<engine>.ts` + `<engine>s.ts` (presets) + `index.ts` shape; new preset → new exported constant in the existing `<engine>s.ts`, not a new file.
+
+### Code style (Biome, `biome.json`)
+
+Single quotes, semicolons as-needed (omitted unless required), trailing commas everywhere, 2-space indent, 100-char lines, `recommended` lint preset. No `any` without a comment explaining why. Prefer explicit types over inference for exported signatures (`WallHandle`, `*Preset`, etc.) since those are the public API surface.
+
+### Publish flow
+
+`prepublishOnly` runs `pnpm build` automatically. Bump `version` in `package.json`, then `npm publish` (or `pnpm publish`) from a clean tree — there's no changeset tooling in this repo (that's a `billets` monorepo convention, doesn't apply here). Commit messages in this repo follow plain English Conventional Commits (`feat:`, `fix:`, ...), not the Korean `<type>(<scope>): ...` convention used in the `billets` monorepo.
+
+## 1. Mental model (read this before writing any code)
 
 VST, not framework: **one engine, many patches.**
 
 - An **engine** (`createWall`, `createDrumKit`, `createBass`, `createDubChamber`, `createStrip`) is color-blind. It takes an `AudioContext`, an `AudioNode` bus to connect into, and a plain preset object. It never schedules anything, never decides *when* something plays.
 - A **preset** is the color — a plain object of parameter values. Built-in presets (`SUNWALL`, `BLUEWALL`, `DRY_KIT`, `DUB_HOLY_BASS`, ...) are just exported constants of the engine's preset type. Writing a new sound almost always means writing a new preset object, not touching engine code.
-- **The caller (you) owns scheduling, mixing, and lifecycle.** Engines only build a node graph and hand back a handle. Nothing here calls `setInterval`, decides pan, or manages sidechain — see §4 and §5.
+- **The caller (you) owns scheduling, mixing, and lifecycle.** Engines only build a node graph and hand back a handle. Nothing here calls `setInterval`, decides pan, or manages sidechain — see §5 and §6.
 
 If you're about to add a `switch` on "which song is this" inside an engine file, stop — that belongs in a preset or in your own sequencer, not in the engine.
 
-## 1. Engine signatures (copy-paste reference)
+## 2. Engine signatures (copy-paste reference)
 
 ### Wall — `createWall` (root export)
 
@@ -26,7 +69,7 @@ function createWall(
 
 interface WallHandle {
   setChord(tones: number[]): void
-  setDistortion(amount: number): void            // reassigns WaveShaper.curve — browser only, see §6
+  setDistortion(amount: number): void            // reassigns WaveShaper.curve — browser only, see §7
   setTremDepth(value: number, rampSec: number): void
   setBendDepth(cents: number, rampSec: number): void
   rampGain(target: number, rampSec: number): void
@@ -107,7 +150,7 @@ interface StripHandle {
 }
 ```
 
-Graph when everything is set: `input(trim gain) → [HP] → [LP] → [bell] → StereoPanner → dest`. Fields you omit don't create a node — see §4.
+Graph when everything is set: `input(trim gain) → [HP] → [LP] → [bell] → StereoPanner → dest`. Fields you omit don't create a node — see §5.
 
 ### Scheduler — `runStepClock` (root export)
 
@@ -127,7 +170,7 @@ interface StepClock { stop(): void }
 
 This is the *only* scheduling primitive in the package. It doesn't know about music — it just calls `onStep(stepIdx, when)` for every step inside a rolling lookahead window. Your sequencer decides what happens at each step.
 
-## 2. Minimal example — one engine
+## 3. Minimal example — one engine
 
 ```ts
 import { createWall, SUNWALL } from '@coldsurf/synth-kit'
@@ -142,7 +185,7 @@ wall.setChord([220, 277, 330, 440])
 // wall.dispose()
 ```
 
-## 3. Combining engines with the scheduler
+## 4. Combining engines with the scheduler
 
 ```ts
 import { createWall, SUNWALL, runStepClock } from '@coldsurf/synth-kit'
@@ -172,20 +215,20 @@ const clock = runStepClock(ctx, {
 
 Wiring three+ engines into one dub chamber follows the same shape — connect `chord`/`pad`/`sub` voices to `chamber.ductable`, drums to `chamber.drumBus`, call `chamber.duck(when)` from your kick step, and `chamber.open(start, totalSec)` once at the top.
 
-## 4. Lifecycle discipline
+## 5. Lifecycle discipline
 
 - **Every `create*()` call returns a handle with `dispose()`.** Call it exactly once, on teardown. Forgetting it leaks nodes; calling it twice is safe (internal cleanup is idempotent) but redundant.
 - **`StepClock.stop()` is separate from engine `dispose()`.** Stop the clock first, then dispose engines — the clock has no independent audio state, but stopping it prevents new notes from firing into an engine you're about to tear down.
 - **`WallHandle.update` doesn't exist as a separate call** — the time-varying setters (`setDistortion`, `setTremDepth`, `setBendDepth`) are what you call from your own clock (e.g. inside `onStep`). There's no single "tick" method; call the specific setter for whatever's changing.
 - **Never call an engine's internal node graph directly.** If you find yourself importing something not exported from `.`/`./drumkit`/`./bass`/`./dub`/`./space`, stop — that's an unsupported deep import.
 
-## 5. Preset-writing discipline
+## 6. Preset-writing discipline
 
 - **Sound preservation is the bar, not deduplication.** If you're tempted to merge two presets that are "basically the same" (e.g. two kick bodies 3 Hz apart), don't. Keep them as separate named constants. The goal of a preset is reproducing an exact, previously-heard sound — not minimizing the number of constants.
 - **Opt-in fields mean opt-in nodes.** In `StripPreset`, an omitted `hpHz`/`lpHz`/`bell` means that filter node is never created — not created-and-bypassed. An empty `{}` preset is a trim gain + a pan-0 panner, nothing else. Only give a field when you actually want that stage to exist.
 - **New sound → new preset constant, not a mutated existing one.** Engines don't have a "tweak this preset" API; presets are plain data. Copy, rename, adjust.
 
-## 6. Mix discipline — lessons from combining engines on one bus
+## 7. Mix discipline — lessons from combining engines on one bus
 
 These apply whenever you route more than one engine (wall + drumkit + dub, etc.) into a shared `AudioNode` bus, especially one with per-channel saturation (dub chamber's tape saturation, a wall's WaveShaper) downstream.
 
@@ -194,10 +237,10 @@ These apply whenever you route more than one engine (wall + drumkit + dub, etc.)
 3. **A pan-0 strip is not unity gain.** `StereoPanner` at pan 0 outputs ≈0.707 per channel (equal-power law) even with a mono input — about −3dB versus a direct connection. Perceptually transparent in normal playback, but it does reduce the drive into anything saturating downstream. If you need exact levels into a saturator, account for the 0.707 factor.
 4. **Verify with a single event's per-channel waveform, not aggregate stats.** Averages (mean |L−R| over a section, RMS) can hide a single transient glitch entirely — the spike doesn't move the average enough to notice. If you suspect a click or artifact, look at the actual samples around that one moment, per channel.
 
-## 7. Don't
+## 8. Don't
 
 - Don't deep-import internal files (`.../sunwall.ts`, `.../drumkit/drumkit.ts`, etc.) — only the barrels (`.`, `./drumkit`, `./bass`, `./dub`, `./space`) are supported.
-- Don't implement scheduling, master fades, sidechain ducking, or panning *inside* an engine call site that's meant to be reusable — those are the sequencer's job, not the engine's. (Panning is `createStrip`'s job specifically — see §6.)
+- Don't implement scheduling, master fades, sidechain ducking, or panning *inside* an engine call site that's meant to be reusable — those are the sequencer's job, not the engine's. (Panning is `createStrip`'s job specifically — see §7.)
 - Don't assume Node/offline-rendering parity with the browser — see below.
 
 ## Offline rendering — read before writing a render pipeline
