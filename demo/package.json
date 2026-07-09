@@ -10,13 +10,18 @@
     "prebuild": "pnpm --filter @coldsurf/synth-kit build",
     "build": "vite build",
     "preview": "vite preview",
-    "check:type": "tsc --noEmit"
+    "check:type": "tsc --noEmit",
+    "predeploy": "pnpm run build",
+    "deploy": "wrangler deploy",
+    "precf:dev": "pnpm run build",
+    "cf:dev": "wrangler dev"
   },
   "dependencies": {
     "@coldsurf/synth-kit": "workspace:*"
   },
   "devDependencies": {
     "typescript": "~5.9.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "wrangler": "^4.107.1"
   }
 }
