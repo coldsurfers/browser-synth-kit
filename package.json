@@ -22,7 +22,7 @@
     "@changesets/cli": "^2.31.0",
     "typescript": "~5.9.3"
   },
-  "packageManager": "pnpm@10.4.1",
+  "packageManager": "pnpm@10.34.4",
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild"
