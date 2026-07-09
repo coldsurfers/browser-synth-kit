@@ -39,14 +39,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build packages
+        run: pnpm build
+
       - name: Lint
         run: pnpm lint
 
       - name: Type check
         run: pnpm check:type
-
-      - name: Build packages
-        run: pnpm build
 
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@v1
