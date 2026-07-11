@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@coldsurf/synth-kit — demo</title>
+    <title>@coldsurf/synth-kit — generative music from code, no samples</title>
+    <meta
+      name="description"
+      content="Color-blind Web Audio synthesis engines. A whole shoegaze track from pure code — hit play, then read the ~40 lines that made it."
+    />
     <link rel="stylesheet" href="./src/style.css" />
   </head>
   <body>
@@ -11,13 +15,30 @@
       <header>
         <h1>@coldsurf/synth-kit</h1>
         <p>
-          Color-blind Web Audio synthesis engines. Pick an engine, pick a preset, hit play — no
-          install required. See the
+          Color-blind Web Audio synthesis engines. A whole track from pure code — no samples, no
+          external audio. Hit play, then read the code that made it.
           <a href="https://github.com/coldsurfers/browser-synth-kit" target="_blank" rel="noreferrer"
-            >source</a
-          >.
+            >GitHub</a
+          >
+          ·
+          <a
+            href="https://www.npmjs.com/package/@coldsurf/synth-kit"
+            target="_blank"
+            rel="noreferrer"
+            >npm</a
+          >
         </p>
       </header>
+
+      <section id="tape-section" class="tape-section">
+        <h2>COLDSURF Tape</h2>
+        <p class="hint">
+          One generative shoegaze track wiring every engine together — the whole point of the
+          package, in one button.
+        </p>
+      </section>
+
+      <h3 class="group-heading">Try each engine</h3>
 
       <section id="wall-section" class="engine-section">
         <h2>Wall</h2>
