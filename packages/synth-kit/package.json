@@ -1,6 +1,6 @@
 {
   "name": "@coldsurf/synth-kit",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Color-blind Web Audio synthesis engines (wall, drumkit, bass, dub chamber, mixer strip) behind a VST-style engine/preset model. Browser-first; see README for offline-rendering caveats.",
   "license": "MIT",
   "publishConfig": {
