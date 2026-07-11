@@ -2,6 +2,8 @@
 
 Color-blind Web Audio synthesis engines, built for [COLDSURF Tape](https://coldsurf.io) — a generative music series produced entirely from code, no samples, no external audio.
 
+**▶ [Play the live demo](https://synth-kit.coldsurf.io)** — a whole shoegaze track wiring every engine together, then read the ~40 lines that made it.
+
 ## Mental model
 
 Think VST: **one engine, many patches.**
@@ -14,20 +16,27 @@ Think VST: **one engine, many patches.**
 import { createWall, SUNWALL, runStepClock } from '@coldsurf/synth-kit'
 
 const ctx = new AudioContext()
-const wall = createWall(ctx, ctx.destination, SUNWALL)
+// createWall takes the starting chord as 4 tones (root · 3rd · 5th · octave), in Hz.
+const wall = createWall(ctx, ctx.destination, SUNWALL, [220, 261.63, 329.63, 440])
 
-wall.fadeIn(0.8, 2)
-wall.setChord(0)
+wall.rampGain(0.8, 2) // fade in over 2s
 
-// drive the time-varying parts (distortion ramp, tremolo depth) from your own clock
+// drive the time-varying parts (chord changes, distortion, tremolo) from your own clock —
+// the scheduler is color-blind; your sequencer decides what happens at each step.
+const chords = [
+  [220, 261.63, 329.63, 440], // Am
+  [174.61, 220, 261.63, 349.23], // F
+]
 runStepClock(ctx, {
   start: ctx.currentTime + 0.1,
   step: 60 / 88 / 4, // 16th notes at 88 BPM
   totalSteps: 64,
-  onStep: (_stepIdx, when) => {
-    wall.update(when - ctx.currentTime)
+  onStep: (stepIdx, when) => {
+    if (stepIdx % 16 === 0) wall.setChord(chords[(stepIdx / 16) % chords.length])
   },
 })
+
+// on teardown: wall.dispose()
 ```
 
 ## Engines
@@ -41,7 +50,7 @@ runStepClock(ctx, {
 | Space | `createStrip` (`./space`) | per-instrument channel strip — pan + carve EQ (HP/LP/bell), opt-in only. | — (mixer, not an instrument) |
 | Scheduler | `runStepClock` | color-blind lookahead step clock (`AudioContext.currentTime` based, no `setInterval` jitter). | — |
 
-All engine handles expose `dispose()`. Instrument engines that hold time-varying parameters (wall's distortion/tremolo ramps) expose `update(elapsedSec)` — call it from your own clock (e.g. `runStepClock`).
+All engine handles expose `dispose()`. Wall's time-varying parameters are driven by dedicated setters (`setChord`, `setDistortion`, `setTremDepth`, `setBendDepth`, `rampGain`) — call whichever is changing from your own clock (e.g. `runStepClock`). There is no single `update()` tick.
 
 ## Design invariants
 
