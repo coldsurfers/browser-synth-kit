@@ -168,6 +168,43 @@ interface StripHandle {
 
 Graph when everything is set: `input(trim gain) → [HP] → [LP] → [bell] → StereoPanner → dest`. Fields you omit don't create a node — see §5.
 
+### Visual stage — `createVisualStage` (from `@coldsurf/synth-kit/visual`)
+
+Renders synth-kit's sound as a frame-synced generative backdrop (VJ / installation use). Same discipline as the audio engines: **color-blind renderer, preset is the color, caller owns the sync.** The renderer never touches `AudioContext` or scheduling — it only reads an `AnalyserNode` and draws.
+
+```ts
+function createVisualStage(
+  canvas: HTMLCanvasElement,
+  analyser: AnalyserNode,  // tapped off your master bus (analyser NOT connected to destination)
+  preset: StagePreset,
+): VisualStageHandle
+
+interface VisualStageHandle {
+  frame(now: number): void                     // one frame — call from rAF (usually via createVisualSync)
+  hit(kind: HitKind, strength: number): void    // discrete punch: 'kick' | 'snare' | 'chord' | 'accent'
+  setPreset(preset: StagePreset): void
+  dispose(): void                               // disconnects the internal ResizeObserver only
+}
+
+// Same signature + same VisualStageHandle, but a WebGL2 "wall of light" (ping-pong feedback
+// smear + bloom + chromatic aberration + grain) — the artistic renderer. Throws if WebGL2 is
+// unavailable; fall back to createVisualStage (2D). Reads the same StagePreset (+ optional GL
+// art knobs warp/grain/feedback). Both are drop-in for createVisualSync.
+function createGlStage(canvas: HTMLCanvasElement, analyser: AnalyserNode, preset: StagePreset): VisualStageHandle
+
+function createVisualSync(ctx: AudioContext, stage: VisualStageHandle): VisualSync
+interface VisualSync {
+  emit(kind: HitKind, when: number, strength: number): void  // call from onStep — queues, does NOT draw
+  start(): void   // rAF loop: drains events whose when <= ctx.currentTime, then stage.frame()
+  stop(): void
+  dispose(): void
+}
+```
+
+**The lookahead trap this solves:** `runStepClock.onStep(stepIdx, when)` schedules sound at a *future* `when` (≈ now + lookahead). Drawing inside `onStep` puts visuals ~100ms ahead of the sound. `createVisualSync` absorbs it — `emit(kind, when)` queues the event; the rAF loop fires `stage.hit()` only when `ctx.currentTime` reaches `when`, so flash and sound land together. Analyser drives the *continuous* background; queued hits drive the *discrete* punch.
+
+Built-in presets (mood-matched to wall presets): `SUN_STAGE` (SUNWALL) · `BLACK_STAGE` (BLACKWALL) · `BLUE_STAGE` (BLUEWALL) · `HATE_STAGE` (SUBLIME_HATE_WALL).
+
 ### Scheduler — `runStepClock` (root export)
 
 ```ts

@@ -104,6 +104,65 @@ header a {
   color: #c8c8d0;
 }
 
+.vj-section {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem 1.75rem;
+  margin-bottom: 2.5rem;
+  background: var(--panel);
+}
+
+.vj-section h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+}
+
+.vj-section em {
+  color: var(--text);
+  font-style: normal;
+  border-bottom: 1px dotted var(--muted);
+}
+
+.vj-stage {
+  margin-top: 1.25rem;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  transition:
+    box-shadow 0.4s ease,
+    border-color 0.4s ease;
+}
+
+.vj-stage.playing {
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 1px var(--accent),
+    0 0 40px -12px var(--accent);
+}
+
+/* fullscreen: stage fills the screen, canvas fills the stage */
+.vj-stage:fullscreen {
+  border: none;
+  border-radius: 0;
+  aspect-ratio: auto;
+}
+
+.vj-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.vj-badge {
+  color: var(--muted);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
 .group-heading {
   color: var(--muted);
   font-size: 0.8rem;

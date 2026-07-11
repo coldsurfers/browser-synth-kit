@@ -45,6 +45,10 @@
     "./space": {
       "types": "./dist/space/index.d.ts",
       "import": "./dist/space/index.js"
+    },
+    "./visual": {
+      "types": "./dist/visual/index.d.ts",
+      "import": "./dist/visual/index.js"
     }
   },
   "main": "./dist/index.js",
