@@ -1,5 +1,12 @@
 # demo
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies [f269733]
+  - @coldsurf/synth-kit@0.2.0
+
 ## 0.0.2
 
 ### Patch Changes
